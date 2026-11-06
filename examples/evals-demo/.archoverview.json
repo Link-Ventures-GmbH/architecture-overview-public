@@ -1,0 +1,3 @@
+{
+  "evals": { "live": "data/live.json", "runs": "data/runs" }
+}

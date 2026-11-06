@@ -1,0 +1,19 @@
+Architecture Overview
+Copyright 2026 Link Ventures GmbH
+
+Originally developed by Link Labs, the lab of Link Ventures GmbH.
+Original project: https://l6s.app
+
+Keep this notice in copies and derived works, as section 4(d) of the Apache
+License 2.0 requires. Please also keep the link to the original project visible.
+
+The Apache License grants no rights to the names "Link Labs" and "Link Ventures"
+or to the Link Labs logo (section 6). Use them to say where this project comes
+from, not as the name or brand of your own product.
+
+Third-party data, under its own terms:
+- web/world-dots.json: land from Natural Earth (public domain) via world-atlas.
+- src/data/countries.json: country centres from world-countries (ODbL 1.0).
+- IP geolocation, downloaded at runtime: DB-IP Lite (CC BY 4.0), https://db-ip.com
+- Fonts, loaded from Google Fonts at runtime: Unbounded, Hanken Grotesk and
+  JetBrains Mono (SIL Open Font License).

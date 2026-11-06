@@ -1,0 +1,25 @@
+{
+  "name": "@linklabs/architecture-overview",
+  "version": "0.1.0",
+  "description": "Live architecture map for the repo you are coding in. Layers, modules, dependencies and what you touched last, on your second screen.",
+  "type": "module",
+  "bin": {
+    "arch-overview": "bin/cli.js"
+  },
+  "scripts": {
+    "start": "node bin/cli.js .",
+    "dev": "node --watch-path=src --watch-path=bin bin/cli.js",
+    "test": "node --test test/*.test.js"
+  },
+  "files": [
+    "bin",
+    "src",
+    "web"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "Apache-2.0",
+  "author": "Link Labs · Link Ventures GmbH",
+  "homepage": "https://l6s.app"
+}

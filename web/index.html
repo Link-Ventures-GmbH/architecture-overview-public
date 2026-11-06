@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Architecture Overview · Link Labs</title>
+  <link rel="icon" href="logo.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;800&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <div class="bg" aria-hidden="true">
+    <div class="bg-grid"></div>
+    <div class="blob blob-a"></div>
+    <div class="blob blob-b"></div>
+    <div class="blob blob-c"></div>
+  </div>
+
+  <header class="top">
+    <div class="brand">
+      <svg class="mark" viewBox="0 0 48 48" aria-hidden="true">
+        <g class="mark-links">
+          <rect x="7" y="15" width="22" height="18" rx="9" class="mark-a"/>
+          <rect x="19" y="15" width="22" height="18" rx="9" class="mark-b"/>
+        </g>
+        <circle class="mark-orbit" cx="24" cy="24" r="21"/>
+        <circle class="mark-dot" cx="24" cy="3" r="2.6"/>
+      </svg>
+      <div class="brand-text">
+        <a class="brand-name" href="https://l6s.app" target="_blank" rel="noopener" title="Link Labs, where this project comes from">LINK<b>/</b>LABS</a>
+        <span class="brand-product">Architecture Overview</span>
+      </div>
+    </div>
+
+    <button class="icon-btn pj-btn" id="btn-projects" title="All projects (O)" aria-label="All projects">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    </button>
+
+    <div class="repo">
+      <span class="eyebrow">Repository</span>
+      <div class="repo-line">
+        <h1 id="repo-name" title="Switch project (O)">…</h1>
+        <span class="branch" id="branch" hidden>
+          <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="4" cy="3.5" r="1.8"/><circle cx="4" cy="12.5" r="1.8"/><circle cx="12" cy="5.5" r="1.8"/><path d="M4 5.3v5.4M12 7.3c0 3-4.5 2.2-7.3 4"/></svg>
+          <span id="branch-name"></span>
+        </span>
+      </div>
+    </div>
+
+    <div class="switch" role="tablist" aria-label="View">
+      <button role="tab" data-view="layers" title="Folders stacked by layer (L)">Layers</button>
+      <button role="tab" data-view="logic" title="Product areas and their parts (L)">Logic</button>
+      <button role="tab" data-view="runtime" title="The running system, from OpenTelemetry (L)">Runtime</button>
+      <button role="tab" data-view="agents" title="Claude agents at work on this machine (L)">Agents</button>
+      <button role="tab" data-view="evals" title="Models answering test questions through the project's tools (L)" hidden>Evals</button>
+      <button role="tab" data-view="usage" title="Who uses the running system and what their requests do inside it (L)" hidden>Usage</button>
+      <span class="switch-thumb" aria-hidden="true"></span>
+    </div>
+
+    <dl class="stats">
+      <div><dt id="st-modules-label">Modules</dt><dd id="st-modules">0</dd></div>
+      <div><dt>Files</dt><dd id="st-files">0</dd></div>
+      <div><dt>Lines</dt><dd id="st-lines">0</dd></div>
+      <div><dt>Links</dt><dd id="st-edges">0</dd></div>
+    </dl>
+
+    <div class="live" id="live" data-state="connecting">
+      <span class="live-dot"></span>
+      <span class="live-text" id="live-text">connecting</span>
+    </div>
+
+    <div class="tools">
+      <button class="icon-btn" id="btn-rail" title="Toggle side panel (R)" aria-label="Toggle side panel">
+        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M15 4v16"/></svg>
+      </button>
+      <button class="icon-btn" id="btn-full" title="Fullscreen (F)" aria-label="Fullscreen">
+        <svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="stage">
+    <section class="map" id="map" aria-label="Architecture map">
+      <div class="map-inner" id="map-inner">
+        <svg class="edges" id="edges" aria-hidden="true">
+          <defs>
+            <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+              <path d="M0 0L10 5L0 10z"/>
+            </marker>
+            <linearGradient id="hot-grad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#FF6A2B"/>
+              <stop offset="1" stop-color="#FFC24B"/>
+            </linearGradient>
+          </defs>
+          <g id="edge-layer"></g>
+          <g id="spark-layer"></g>
+        </svg>
+        <div class="bands" id="bands"></div>
+      </div>
+      <div class="map-bar" id="map-bar" hidden>
+        <span class="map-bar-source" id="map-source"></span>
+        <button class="bar-btn primary" id="btn-map-claude">Map with Claude</button>
+        <button class="bar-btn" id="btn-map-prompt" title="Copy a prompt for your coding agent; the map appears here once the agent saved it">Copy agent prompt</button>
+      </div>
+      <div class="map-bar rt-bar" id="rt-bar" hidden>
+        <span class="rt-pulse"></span>
+        <span class="map-bar-source" id="rt-status">Waiting for OpenTelemetry</span>
+        <span class="rt-endpoint" id="rt-endpoint"></span>
+      </div>
+      <div class="rt-empty" id="rt-empty" hidden>
+        <span class="eyebrow">Runtime view</span>
+        <h2>Show me your running app</h2>
+        <p>Start it with OpenTelemetry pointed at this tool. Requests then run across the map as they happen: which parts they touch, how long they take, where they fail.</p>
+        <pre id="rt-cmd"></pre>
+        <div class="rt-empty-actions">
+          <button class="bar-btn primary" id="rt-copy">Copy command</button>
+          <span>Once per project: <code id="rt-install">npm i @opentelemetry/auto-instrumentations-node</code></span>
+        </div>
+        <p class="rt-note">Any OpenTelemetry SDK works (Go, Python, Java …): send OTLP over HTTP, protobuf or JSON.</p>
+      </div>
+      <div class="agents-stage" id="agents-stage" hidden>
+        <div class="ag-tree-wrap" id="ag-tree-wrap">
+          <span class="eyebrow ag-cap" id="ag-cap">Agents</span>
+          <div class="ag-mode" role="group" aria-label="Agents view">
+            <button data-mode="team" aria-pressed="false">Team</button>
+            <button data-mode="chat" aria-pressed="true">Chat</button>
+          </div>
+          <svg class="ag-tree-lines" id="ag-tree-lines" aria-hidden="true"></svg>
+          <div class="ag-cards" id="ag-cards"></div>
+          <svg class="tm-lines" id="tm-lines" aria-hidden="true"></svg>
+          <div class="tm-wrap" id="tm-wrap" hidden></div>
+        </div>
+        <div class="ag-world-wrap">
+          <div class="tm-talk" id="tm-talk" hidden>
+            <div class="tm-talk-head"><span class="eyebrow">Conversation</span>
+              <button class="icon-btn small" id="tm-talk-size" aria-pressed="false" title="Wider to read, narrower to see the team" aria-label="Toggle conversation width">
+                <svg viewBox="0 0 24 24"><path d="M9 6l-6 6 6 6M15 6l6 6-6 6"/></svg>
+              </button></div>
+            <ol class="tm-feed" id="tm-feed"></ol>
+          </div>
+          <span class="eyebrow ag-cap ag-world-cap">Where they went</span>
+          <svg class="ag-world" id="ag-world" preserveAspectRatio="xMidYMid meet" aria-label="World map of web requests"></svg>
+          <div class="ag-cdn" id="ag-cdn" hidden></div>
+          <div class="ag-legend">
+            <span><i class="lg-fill"></i>Seat or country of the domain</span>
+            <span><i class="lg-ring"></i>Server location, may be a network node</span>
+            <span><i class="lg-found"></i>Found in a search, not opened</span>
+            <span class="ag-attr">IP geolocation by <a href="https://db-ip.com" target="_blank" rel="noopener">DB-IP</a></span>
+          </div>
+        </div>
+      </div>
+      <div class="ev-stage" id="ev-stage" hidden>
+        <div class="ag-mode ev-mode" role="group" aria-label="Evals view">
+          <button data-evmode="live" aria-pressed="true">Live</button>
+          <button data-evmode="coverage" aria-pressed="false">Coverage</button>
+          <button data-evmode="variants" aria-pressed="false">Variants</button>
+        </div>
+        <svg class="ev-lines" id="ev-lines" aria-hidden="true"></svg>
+        <div class="ev-band ev-band-agents">
+          <div class="ev-band-head"><span class="eyebrow">Agents</span><span class="ev-band-meta" id="ev-agents-count"></span></div>
+          <div class="ev-cards" id="ev-cards"></div>
+        </div>
+        <div class="ev-band ev-band-tools">
+          <div class="ev-band-head"><span class="eyebrow" id="ev-target-cap">Tools</span><span class="ev-band-meta" id="ev-target"></span></div>
+          <div class="ev-tools" id="ev-tools"></div>
+        </div>
+        <div class="ev-band ev-band-hosts">
+          <div class="ev-band-head"><span class="eyebrow">Sources</span><span class="ev-band-meta">hosts the tools called</span></div>
+          <div class="ev-hosts" id="ev-hosts"></div>
+        </div>
+        <div class="rt-empty ev-empty" id="ev-empty" hidden>
+          <span class="eyebrow">Evals view</span>
+          <h2>Waiting for a test run</h2>
+          <p>The runner writes its state to the file named under <code>evals.live</code> in <code>.archoverview.json</code>. Spans with <code>gen_ai.operation.name</code> (chat, execute_tool) add the light points and the waterfall.</p>
+        </div>
+        <div class="ev-cov" id="ev-cov" hidden>
+          <div class="ev-band ev-cov-head">
+            <div class="ev-band-head"><span class="eyebrow">Coverage &amp; funnel</span><span class="ev-band-meta" id="ev-cov-meta"></span></div>
+            <div class="ev-sets" id="ev-sets"></div>
+            <div class="ev-cov-top"><div class="ev-funnel" id="ev-funnel"></div><div class="ev-covbars" id="ev-covbars"></div></div>
+          </div>
+          <div class="ev-band ev-map-band">
+            <div class="ev-band-head"><span class="eyebrow">Coverage map</span><span class="ev-band-meta">one tile per field · click for the questions and what is missing</span></div>
+            <div class="ev-map" id="ev-map"></div>
+          </div>
+        </div>
+        <div class="ev-cmp" id="ev-cmp" hidden>
+          <div class="ev-band ev-cmp-head">
+            <div class="ev-band-head"><span class="eyebrow">Variants</span><select class="ev-cmp-pick" id="ev-cmp-pick" aria-label="Comparison"></select><span class="ev-band-meta" id="ev-cmp-meta"></span><button class="bar-btn" id="ev-cmp-report" hidden>Report</button></div>
+            <div class="ev-cmp-sum" id="ev-cmp-sum"></div>
+          </div>
+          <div class="ev-band ev-cmp-band">
+            <div class="ev-band-head"><span class="eyebrow">Per field</span><span class="ev-band-meta">wins per variant and grades per criterion · click for the questions</span></div>
+            <div class="ev-cmp-fields" id="ev-cmp-fields"></div>
+          </div>
+        </div>
+        <div class="ev-trace" id="ev-trace" hidden></div>
+      </div>
+      <div class="us-stage" id="us-stage" hidden>
+        <div class="ag-mode ev-mode" role="group" aria-label="Usage view">
+          <button data-usmode="accounts" aria-pressed="true">Accounts</button>
+          <button data-usmode="outside" aria-pressed="false">Outside</button>
+        </div>
+        <svg class="ev-lines" id="us-lines" aria-hidden="true"></svg>
+        <div class="ev-band us-band-people">
+          <div class="ev-band-head"><span class="eyebrow">People</span><span class="ev-band-meta" id="us-people-meta"></span></div>
+          <div class="us-people" id="us-people"></div>
+        </div>
+        <div class="ev-band us-band-tools">
+          <div class="ev-band-head"><span class="eyebrow" id="us-tools-title">Tools</span><span class="ev-band-meta" id="us-tools-meta">what their AI calls</span></div>
+          <div class="ev-tools" id="us-tools"></div>
+        </div>
+        <div class="ev-band us-band-sources">
+          <div class="ev-band-head"><span class="eyebrow">Sources</span><span class="ev-band-meta" id="us-src-meta"></span></div>
+          <div class="us-sources" id="us-sources"></div>
+        </div>
+        <div class="ev-band us-band-reqs">
+          <div class="ev-band-head"><span class="eyebrow">Requests</span><span class="ev-band-meta" id="us-req-meta"></span>
+            <span class="us-phase-key"><span><i class="ph-find"></i>Search</span><span><i class="ph-check"></i>Check</span><span><i class="ph-price"></i>Price</span><span><i class="ph-fetch"></i>Fetch</span><span><i class="ph-source"></i>Source</span><span><i class="ph-cut"></i>Cut</span><span><i class="ph-receipt"></i>Receipt</span><span><i class="ph-deliver"></i>Deliver</span></span></div>
+          <ol class="us-reqs" id="us-reqs"></ol>
+        </div>
+        <div class="us-out-view" id="us-out-view" hidden>
+          <div class="ev-band us-ov-top">
+            <div class="ev-band-head"><span class="eyebrow">Outside · last 24 hours</span><span class="ev-band-meta" id="us-ov-meta"></span></div>
+            <div class="us-ov-classes" id="us-ov-classes"></div>
+          </div>
+          <div class="us-ov-mid">
+            <div class="ev-band"><div class="ev-band-head"><span class="eyebrow">Per hour</span><span class="ev-band-meta">requests without an account, by caller</span></div><div id="us-ov-hours"></div></div>
+            <div class="ev-band"><div class="ev-band-head"><span class="eyebrow">Connecting an AI</span><span class="ev-band-meta">OAuth steps</span></div><div id="us-ov-oauth"></div></div>
+            <div class="ev-band"><div class="ev-band-head"><span class="eyebrow">Pages</span><span class="ev-band-meta">visitors</span></div><ol class="us-ov-list" id="us-ov-pages"></ol></div>
+            <div class="ev-band"><div class="ev-band-head"><span class="eyebrow">Came from</span><span class="ev-band-meta">visitors</span></div><ol class="us-ov-list" id="us-ov-refs"></ol></div>
+          </div>
+          <div class="us-ov-bottom">
+            <div class="ev-band"><div class="ev-band-head"><span class="eyebrow">Refused</span><span class="ev-band-meta">401 and 403, last 24 hours</span></div><ol class="us-ov-list" id="us-ov-refused"></ol></div>
+            <div class="ev-band"><div class="ev-band-head"><span class="eyebrow">Live · without an account</span><span class="ev-band-meta" id="us-ov-live-meta"></span></div><ol class="us-ov-live" id="us-ov-live"></ol></div>
+          </div>
+        </div>
+        <div class="ev-trace" id="us-trace" hidden></div>
+      </div>
+      <div class="empty" id="empty" hidden>
+        <span class="eyebrow">No source files found</span>
+        <p>Point the tool at a folder with code: <code>arch-overview path/to/repo</code></p>
+      </div>
+    </section>
+
+    <aside class="rail" id="rail">
+      <section class="now" id="now">
+        <span class="eyebrow">Working on now</span>
+        <div class="now-body" id="now-body"></div>
+      </section>
+
+      <section class="detail" id="detail" hidden>
+        <div class="detail-head">
+          <span class="eyebrow" id="detail-eyebrow">Module</span>
+          <button class="icon-btn small" id="detail-close" aria-label="Close details">
+            <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+          </button>
+        </div>
+        <div id="detail-body"></div>
+      </section>
+
+      <section class="ag-rail" id="ag-rail">
+        <select class="ag-session" id="ag-session" aria-label="Session"></select>
+        <div class="now ag-now" id="ag-now"></div>
+        <div class="ag-block"><span class="eyebrow">Models</span><div id="ag-models"></div></div>
+        <div class="ag-cols">
+          <div class="ag-block"><span class="eyebrow">Types</span><div id="ag-types"></div></div>
+          <div class="ag-block"><span class="eyebrow">Tokens</span><div id="ag-tokens"></div></div>
+        </div>
+        <div class="ag-block"><span class="eyebrow">Tools</span><div id="ag-tools"></div></div>
+        <div class="ag-block"><span class="eyebrow">Places</span><div id="ag-places"></div></div>
+      </section>
+
+      <section class="ev-rail" id="ev-rail">
+        <select class="ag-session" id="ev-run" aria-label="Run"></select>
+        <div class="now ev-now" id="ev-now"></div>
+        <div class="ag-block"><span class="eyebrow">Budget</span><div id="ev-budget"></div><div id="ev-ledger"></div></div>
+        <div class="ev-kpis" id="ev-kpis"></div>
+        <div class="ag-block"><span class="eyebrow">Field × model</span><div id="ev-matrix"></div></div>
+        <button class="bar-btn ev-needs" id="ev-needs" hidden>Source needs</button>
+        <div class="ag-block"><span class="eyebrow">Questions</span><ol class="ev-questions" id="ev-questions"></ol></div>
+      </section>
+
+      <section class="us-rail" id="us-rail">
+        <div class="now us-now" id="us-status"></div>
+        <div class="ev-kpis us-kpis" id="us-kpis"></div>
+        <div class="ag-block"><span class="eyebrow">Outside view · no account</span><div id="us-outside"></div></div>
+        <div class="ag-block"><span class="eyebrow">Last 24 hours</span><div id="us-day"></div></div>
+        <div class="ag-block"><span class="eyebrow">Power users · 7 days</span><ol class="us-rank" id="us-rank"></ol></div>
+        <div class="ag-block"><span class="eyebrow">Where the time goes</span><div id="us-phase-costs"></div></div>
+      </section>
+
+      <section class="feed-wrap traces-wrap">
+        <div class="feed-head">
+          <span class="eyebrow">Traces</span>
+          <span class="feed-count" id="traces-count"></span>
+        </div>
+        <ol class="feed traces" id="traces"></ol>
+        <div class="traces-unmapped" id="traces-unmapped"></div>
+      </section>
+
+      <section class="feed-wrap activity-wrap">
+        <div class="feed-head">
+          <span class="eyebrow">Activity</span>
+          <span class="feed-count" id="feed-count"></span>
+        </div>
+        <ol class="feed" id="feed"></ol>
+      </section>
+    </aside>
+  </main>
+
+  <footer class="timeline">
+    <button class="replay" id="btn-replay" title="Replay recent commits (P)">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5l12 7-12 7z"/></svg>
+      <span>Replay</span>
+    </button>
+    <div class="tl-track" id="tl-track">
+      <div class="tl-line"></div>
+      <div class="tl-dots" id="tl-dots"></div>
+    </div>
+    <div class="tl-caption" id="tl-caption"><span class="eyebrow">Commits</span><span id="tl-caption-text">Hover a dot to see where it landed</span></div>
+  </footer>
+
+  <section class="projects" id="projects" hidden aria-label="Projects">
+    <div class="pj-head">
+      <div>
+        <span class="eyebrow" id="pj-eyebrow">Projects</span>
+        <h2 id="pj-title">Where is the action?</h2>
+        <span class="pj-where"><span id="pj-count"></span> · <span id="pj-where"></span></span>
+      </div>
+      <div class="pj-tools">
+        <div class="pj-filter" role="group" aria-label="Show">
+          <button data-pjmode="products" aria-pressed="true">Products</button>
+          <button data-pjmode="projects" aria-pressed="false">Projects</button>
+        </div>
+        <div class="pj-filter" id="pj-days" role="group" aria-label="Filter">
+          <button data-all="0" aria-pressed="true">Last 14 days</button>
+          <button data-all="1" aria-pressed="false">All</button>
+        </div>
+        <button class="icon-btn" id="pj-close" aria-label="Close projects">
+          <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="pj-grid" id="pj-grid"></div>
+    <div class="ct-board" id="ct-board" hidden></div>
+  </section>
+
+  <div class="tip" id="tip" hidden></div>
+  <div class="flash" id="flash" hidden></div>
+  <div class="toast" id="toast" hidden></div>
+
+  <script src="app.js" type="module"></script>
+</body>
+</html>
